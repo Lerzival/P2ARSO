@@ -12,14 +12,14 @@ def configure():
     # Instalamos MongoDB obligatoriamente porque la imagen no lo trae
     subprocess.run(["lxc", "exec", "db", "--", "apt", "update"])
     subprocess.run([
-        "lxc", "exec", "db","--", 
+        "lxc", "exec", "db", "--env", "--", 
         "apt", "install", "-y", "mongodb"
     ])
 
-    # Abrimos la IP 
+    # Abrimos la IP EXACTAMENTE como indica el PDF del Laboratorio 6.2
     subprocess.run([
         "lxc", "exec", "db", "--",
-        "sed", "-i", "s/bindIp: 127.0.0.1/bindIp: 0.0.0.0/", "/etc/mongodb.conf"
+        "sed", "-i", "s/bind_ip = 127.0.0.1/bind_ip = 0.0.0.0/", "/etc/mongodb.conf"
     ])
 
     # Reiniciamos
@@ -31,7 +31,6 @@ def configure():
     # --- 2. CONFIGURACIÓN DE HAPROXY (lb) ---
     logger.info("Configurando HAProxy...")
     
-    # Instalamos HAProxy obligatoriamente
     subprocess.run(["lxc", "exec", "lb", "--", "apt", "update"])
     subprocess.run([
         "lxc", "exec", "lb", "--", 
@@ -45,20 +44,11 @@ def configure():
     subprocess.run(["lxc", "exec", "lb", "--", "systemctl", "restart", "haproxy"])
     logger.info("HAProxy configurado")
 
-    # Si reiniciamos muchas cosas quizás rente hacer un módulo
-    # que se llame reiniciar y reciba el nombre de lo que queremos
-    # reiniciar como parámetro
 
-    # Esto lo pongo porque sino no funciona la variable num_servidores
-    # No sé si renta poner esto o simplemente ejecutarlo desde el main
-    # donde sí existe la variable
     num_servidores = readFile()
 
     logger.info("Configurando servidores web...")
-    # --- 3. CONFIGURACIÓN DE SERVIDORES WEB (s1, s2...) ---
-    # IMPORTANTE: Asegúrate de tener 'import time' al principio de tu archivo configure.py
     
-    # Asumiendo que has recuperado la variable num_servidores previamente
     logger.info(f"Configurando {num_servidores} servidores web...")
 
     for i in range(1, int(num_servidores) + 1):
@@ -70,7 +60,7 @@ def configure():
             "lxc", "file", "push", "install.sh", f"{nombre}/root/install.sh"
         ])
 
-        # 2. Dar permisos de ejecución (usamos ruta absoluta por seguridad en LXC)
+        # 2. Dar permisos de ejecución
         subprocess.run([
             "lxc", "exec", nombre, "--", "chmod", "+x", "/root/install.sh"
         ])
@@ -82,32 +72,39 @@ def configure():
 
         # 4. Descomprimir el fichero TAR
         subprocess.run([
-            "lxc", "exec", nombre, "--", "bash", "-c", "cd /root && tar -oxvf app.tar.gz"  #TODO: poner bien la ruta de la app porque no está en la ruta
+            "lxc", "exec", nombre, "--", "bash", "-c", "cd /root && tar -oxvf app.tar.gz" 
         ])
 
-        # 5. Ejecutar la instalación a través del fichero install.sh
+        # 5. Sustituir la IP antigua tal y como pide el PDF de la Práctica 2
+        subprocess.run([
+            "lxc", "exec", nombre, "--", 
+            "sed", "-i", "s/10.0.0.20/134.3.0.20/g", "/root/app/md-seed-config.js"
+        ])
+        
+        # Opcional (por si la IP antigua estuviera también en rest_server.js)
+        subprocess.run([
+            "lxc", "exec", nombre, "--", 
+            "sed", "-i", "s/10.0.0.20/134.3.0.20/g", "/root/app/rest_server.js"
+        ])
+
+        # 6. Ejecutar la instalación a través del fichero install.sh
         subprocess.run([
             "lxc", "exec", nombre, "--", "bash", "-c", "cd /root && ./install.sh"
         ])
 
-        # 6. Reiniciar el contenedor para completar la instalación
+        # 7. Reiniciar el contenedor para completar la instalación
         logger.info(f"Reiniciando {nombre} para aplicar los cambios de instalación...")
         subprocess.run([
             "lxc", "restart", nombre
         ])
 
-        # Pausa de seguridad de 3 segundos para dar tiempo al contenedor a encender su red interna
+        # Pausa de seguridad de 3 segundos
         time.sleep(3) 
 
-        # 7. Lanzar la aplicación web usando forever
+        # 8. Lanzar la aplicación web usando forever
         logger.info(f"Arrancando aplicación en {nombre}...")
         subprocess.run([
             "lxc", "exec", nombre, "--", "bash", "-c", "cd /root && forever start app/rest_server.js"
         ])
         
     logger.info("Configuración de todos los servidores completada con éxito.")
-
-
-    # Dentro de este módulo podemos hacer varias funciones separadas para modular más
-    # por ejemplo, configured, configuremongodb... quizás sea más fácil de leer y tal
-    # si se modulariza, hay que cambiar el main

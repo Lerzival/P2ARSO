@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 def preparar_imagen_base():
     alias_imagen = "base-arso"
-    ruta_archivo = "./arso25-p2.tar.gz" #TODO: hay que poner la ruta bien y completa, porque no la podemos incluir aquí  
+    ruta_archivo = "./arso25-p2.tar.gz" 
 
     logger.info(f"Verificando el estado de la imagen '{alias_imagen}'...")
 
