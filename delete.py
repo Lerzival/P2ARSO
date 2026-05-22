@@ -29,6 +29,11 @@ def delete():
         logger.info("Eliminando " + nombre)
         subprocess.run(["lxc", "delete", nombre, "--force"])
 
+   # Elimina las comunicaciones
+    logger.info("Eliminando lxdbr1")
+    subprocess.run(["lxc", "network", "delete", "lxdbr1"])
+    
+
     logger.info("Escenario eliminado") 
 
     writeFile(" ") # Vaciamos el fichero de configuración

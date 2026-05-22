@@ -50,7 +50,8 @@ def start():
             
     # Reiniciamos el contenedor para que se muestren los cambios
     logger.info("restart de lb")
-    subprocess.run(["lxc", "restart", "lb"])
+    subprocess.run(["lxc", "stop", "lb"])
+    subprocess.run(["lxc", "start", "lb"])
     logger.info("lb reiniciado correctamente")
     subprocess.Popen(["xterm", "-e", "lxc exec " + "lb" + " bash"])
           
