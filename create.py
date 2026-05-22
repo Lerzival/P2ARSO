@@ -3,8 +3,7 @@ import logging
 import time
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-from functions import writeFile
-from importarImagen import preparar_imagen_base
+from functions import writeFile import preparar_imagen_base
 
 def create(num_servidores):
 
