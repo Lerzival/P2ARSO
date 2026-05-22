@@ -24,7 +24,6 @@ def configure():
 
     # Reiniciamos
     subprocess.run(["lxc", "exec", "db", "--", "systemctl", "restart", "mongodb"])
-    logger.info("MongoDB configurado")
 
     logger.info("MongoDB configurado")
 
@@ -83,7 +82,7 @@ def configure():
 
         # 4. Descomprimir el fichero TAR
         subprocess.run([
-            "lxc", "exec", nombre, "--", "bash", "-c", "cd /root && tar -oxvf app.tar.gz"
+            "lxc", "exec", nombre, "--", "bash", "-c", "cd /root && tar -oxvf app.tar.gz"  #TODO: poner bien la ruta de la app porque no está en la ruta
         ])
 
         # 5. Ejecutar la instalación a través del fichero install.sh
