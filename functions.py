@@ -1,5 +1,6 @@
 import subprocess
 import logging
+import os
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -70,3 +71,13 @@ def importImage():
             logger.error("Fallo al importar la imagen.")
             logger.error(f"Por favor, asegúrate de que el archivo '{ruta}' se encuentra en la misma carpeta que este script.")
     
+def getName():
+    # HACE FALTA CITAR CODIGO TODO
+    return os.uname().nodename
+
+
+def obtenerIP(numOrdenador):
+    nombreRed = numOrdenador + ".lab.dit.upm.es"
+    # HACE FALTA CITAR ESTE CÓDIGO: no nos dan en el labo la opcion +short, conseguimos la IP TODO
+    respuesta = subprocess.run(["dig", "+short", "+noauthority", "+noadditional", nombreRed], stdout=subprocess.PIPE)
+    ip = respuesta.stdout.decode("utf-8").strip()

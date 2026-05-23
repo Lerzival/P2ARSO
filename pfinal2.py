@@ -18,6 +18,8 @@ from deleteOne import deleteOne
 from stopOne import stopOne
 from connectivityCheck import connectivityCheck
 from configure import configure
+from configureOne import configureOne
+import remoteConfiguration
 
 
 def main():
@@ -47,7 +49,7 @@ def main():
 
         create(num_servidores)
 
-    elif orden in ["start", "list", "delete", "createOne", "connectivityCheck", "configure"]:
+    elif orden in ["start", "list", "delete", "createOne", "connectivityCheck", "configure", "enlarge"]:
         if len(sys.argv) != 2:
             logger.error("Error: la orden " + orden +  "no acepta parámetros") #Comprobar que en start, lista y delete no se dan parámetros, solo en create
             return
@@ -64,11 +66,17 @@ def main():
             connectivityCheck()
         elif orden == "configure":
             configure()
-    elif orden in ["startOne", "deleteOne", "stopOne"]:
+        elif orden == "enlarge":
+            server = createOne()
+            startOne(server)
+            configureOne(server)  
+
+
+    elif orden in ["startOne", "deleteOne", "stopOne", "configureOne"]:
         if len(sys.argv) != 3:
             logger.error("Error: la orden " + orden + " requiere el nombre del servidor") 
             return
-        
+
         nombre = sys.argv[2]
         if nombre not in ["s1", "s2", "s3", "s4", "s5"]:
             logger.error("Error: el nombre del servidor debe ser s1, s2, s3, s4 o s5") 
@@ -80,7 +88,38 @@ def main():
             deleteOne(nombre)
         elif orden == "stopOne":
             stopOne(nombre)
+        elif orden == "configureOne":
+            configureOne(nombre)
+             
 
+    elif orden == "remoteConfiguration":
+        if len(sys.argv) != 4 or len(sys.argv) != 3:
+            logger.error("Error: la orden remoteConfiguration requiere que se indique la modalidad (A o B) y, en el caso de ser A, el numero de equipo de B") 
+            return
+        
+        if sys.argv[2] not in ["A", "B"]:
+            logger.error("Error: la modalidad debe ser A o B") 
+            return
+
+        if sys.argv[2] == "A":
+            if len(sys.argv) != 4:
+                logger.error("Error: la modalidad A requiere que se indique el número de equipo de B") 
+                return
+            try:
+                equipoB = sys.argv[3]
+            except ValueError:
+                logger.error("Error: el número de equipo de B debe ser un número entero") 
+                return
+            
+            remoteConfiguration.configurationA(equipoB)
+            remoteConfiguration.configureRemoto()
+            
+        if sys.argv[2] == "B":
+            if len(sys.argv) != 3:
+                logger.error("Error: la modalidad B no requiere que se indique número de máquina") 
+                return
+            remoteConfiguration.configurationB()     
+    
     else:
         logger.error("Error: comando no válido") # Devolver porque no hay suficientes parámetros
 

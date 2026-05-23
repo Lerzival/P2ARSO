@@ -29,7 +29,7 @@ def createOne():
         nombre = "s" + str(indiceserver)
 
         if exists(nombre):
-            logger.error("El servidor " + nombre + " ya existe. Probando el siguiente.")
+            logger.info("El servidor " + nombre + " ya existe. Probando el siguiente.")
             indiceserver += 1
             continue
 
@@ -42,3 +42,5 @@ def createOne():
     writeFile("servers.txt", str(num_servidores + 1))
 
     logger.info(nombre + " creado correctamente")
+    
+    return nombre
