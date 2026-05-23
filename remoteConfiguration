@@ -28,9 +28,9 @@ def configurationA(numOrdenadorRemoto):
     subprocess.run(["lxc", "network", "set", "remoto:lxdbr0", "ipv4.address", "134.3.0.1/24"])
     subprocess.run(["lxc", "network", "set", "remoto:lxdbr0", "ipv4.nat", "true"])
 
-    # Creamos remotamente la db
-    subprocess.run(["lxc", "init", "base-arso", "remoto:db"])
-    subprocess.run(["lxc", "config", "device", "override", "remoto:db", "eth0", "ipv4.address=134.3.0.20"])
+    # Copiar remotamente la db
+    subprocess.run(["lxc", "copy", "db", "remoto:db"])
+
 
     # Creamos el proxy
     orden = "listen=tcp:" + obtenerIP(numOrdenadorRemoto) + ":27017"
