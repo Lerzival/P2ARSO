@@ -13,7 +13,7 @@ from functions import getName
 
 # ORDENADOR A
 
-def configurationA(numOrdenadorRemoto):
+def configurationA(ipB):
     ipA = obtenerIP(getName())
 
     # Permitimos el acceso remoto 
@@ -21,7 +21,7 @@ def configurationA(numOrdenadorRemoto):
     subprocess.run(["lxc", "config", "set", "core.https_address", orden])
 
     # Nos acreditamos
-    orden2 = obtenerIP(numOrdenadorRemoto) + ":8443"
+    orden2 = ipB + ":8443"
     subprocess.run(["lxc", "remote", "add", "remoto", orden2, "--password", "mypass", "--accept-certificate"])
 
     # Configuramos el bridge remoto
@@ -29,15 +29,25 @@ def configurationA(numOrdenadorRemoto):
     subprocess.run(["lxc", "network", "set", "remoto:lxdbr0", "ipv4.nat", "true"])
 
     # Copiar remotamente la db
+
+    # Editamos fichero de configuración de mongo para asignar la IP
+    subprocess.run([
+        "lxc", "exec", "db", "--",
+        "sed", "-i", "s/bind_ip = 127.0.0.1/bind_ip = 127.0.0.1,134.3.0.20/", "/etc/mongodb.conf"
+    ])
+
+    subprocess.run(["lxc", "exec", "remoto:db", "--", "systemctl", "restart", "mongodb"])
+    
     subprocess.run(["lxc", "stop", "db"])
     subprocess.run(["lxc", "copy", "db", "remoto:db"])
     subprocess.run(["lxc", "start", "remoto:db"])
 
     # Creamos el proxy
-    orden = "listen=tcp:" + obtenerIP(numOrdenadorRemoto) + ":27017"
+    orden = "listen=tcp:" + ipB + ":27017"
     subprocess.run(["lxc", "config", "device", "add", "remoto:db", "miproxy", "proxy", orden, "connect=tcp:134.3.0.20:27017"])
 
-    subprocess.run(["lxc", "exec", "remoto:db", "--", "systemctl", "restart", "mongodb"])
+
+
     time.sleep(10) 
     subprocess.run(["lxc", "delete", "db", "--force"])
 
@@ -53,10 +63,10 @@ def configurationB():
     # Acreditación
     subprocess.run(["lxc", "config", "set", "core.trust_password", "mypass"])
 
+    print(ipB)
 
-def configureRemoto(numOrdenadorRemoto): 
 
-    ipB = obtenerIP(numOrdenadorRemoto)
+def configureRemoto(ipB): 
 
     # configuramos haproxy
     logger.info("Configurando Haproxy")
@@ -93,7 +103,7 @@ def configureRemoto(numOrdenadorRemoto):
         subprocess.run(["lxc", "file", "push", "install.sh", f"{nombre}/root/install.sh"])
 
         #Cambiar permisos de ejecución
-        subprocess.run(["lxc", "exec", nombre, "--", "chmod", "+x", "install.sh"])
+        subprocess.run(["lxc", "exec", nombre, "--", "chmod", "+x", "/root/install.sh"])
 
         # Copiar ficheros de la aplicación web al contenedor
         subprocess.run(["lxc", "file", "push", "-r", "app.tar.gz", f"{nombre}/root/"])
@@ -102,8 +112,10 @@ def configureRemoto(numOrdenadorRemoto):
         subprocess.run(["lxc", "exec", nombre, "--", "tar", "-oxvf", "/root/app.tar.gz"])
 
         #Sustituir la IP antigua
+
+        print(f"ipB = {repr(ipB)}")
         subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/10.0.0.20/{ipB}/g", "/root/app/md-seed-config.js"])
-        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/134.3.0.20/{ipB}/g", "/root/app/rest_server.js"])
+        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/10.0.0.20/{ipB}:27017/g", "/root/app/rest_server.js"])
 
         #Ejecutar la instalación a través del fichero install.sh
         subprocess.run(["lxc", "exec", nombre, "--", "/root/install.sh"])

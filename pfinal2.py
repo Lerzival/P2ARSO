@@ -96,7 +96,7 @@ def main():
 
     elif orden == "remoteConfiguration":
         if len(sys.argv) <3:
-            logger.error("Error: la orden remoteConfiguration requiere que se indique la modalidad (A o B) y, en el caso de ser A, el numero de equipo de B") 
+            logger.error("Error: la orden remoteConfiguration requiere que se indique la modalidad (A o B) y, en el caso de ser A, la ip de B") 
             return
         
         if sys.argv[2] not in ["A", "B"]:
@@ -105,16 +105,16 @@ def main():
 
         if sys.argv[2] == "A":
             if len(sys.argv) != 4:
-                logger.error("Error: la modalidad A requiere que se indique el número de equipo de B") 
+                logger.error("Error: la modalidad A requiere que se indique la ip de B") 
                 return
             try:
-                equipoB = sys.argv[3]
+                ipB = sys.argv[3]
             except ValueError:
                 logger.error("Error: el número de equipo de B debe ser un número entero") 
                 return
             
-            configurationA(equipoB)
-            configureRemoto(equipoB)
+            configurationA(ipB)
+            configureRemoto(ipB)
             
         if sys.argv[2] == "B":
             if len(sys.argv) != 3:

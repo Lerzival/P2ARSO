@@ -72,8 +72,9 @@ def importImage():
             logger.error(f"Por favor, asegúrate de que el archivo '{ruta}' se encuentra en la misma carpeta que este script.")
     
 def getName():
-    # HACE FALTA CITAR CODIGO TODO
-    return os.uname().nodename
+    # HACE FALTA CITAR CODIGO TODO return os.uname().nodename
+    respuesta = subprocess.run(["hostname"], stdout=subprocess.PIPE)
+    return respuesta.stdout.decode("utf-8").strip()
 
 
 def obtenerIP(numOrdenador):
