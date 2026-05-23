@@ -21,7 +21,7 @@ from configure import configure
 from configureOne import configureOne
 from remoteConfiguration import configurationA
 from remoteConfiguration import configurationB
-from remoteConfiguration import remoteConfiguration
+from remoteConfiguration import configureRemoto
 
 
 def main():
