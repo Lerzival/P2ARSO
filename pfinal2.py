@@ -95,8 +95,13 @@ def main():
              
 
     elif orden == "remoteConfiguration":
+<<<<<<< HEAD
         if len(sys.argv) <3:
             logger.error("Error: la orden remoteConfiguration requiere que se indique la modalidad (A o B) y, en el caso de ser A, la ip de B") 
+=======
+        if len(sys.argv) >= 4:
+            logger.error("Error: la orden remoteConfiguration requiere que se indique la modalidad (A o B) y, en el caso de ser A, el numero de equipo de B") 
+>>>>>>> 3556fbf (cosas varias)
             return
         
         if sys.argv[2] not in ["A", "B"]:
