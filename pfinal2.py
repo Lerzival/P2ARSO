@@ -19,7 +19,9 @@ from stopOne import stopOne
 from connectivityCheck import connectivityCheck
 from configure import configure
 from configureOne import configureOne
-import remoteConfiguration
+from remoteConfiguration import configurationA
+from remoteConfiguration import configurationB
+from remoteConfiguration import remoteConfiguration
 
 
 def main():
@@ -111,14 +113,14 @@ def main():
                 logger.error("Error: el número de equipo de B debe ser un número entero") 
                 return
             
-            remoteConfiguration.configurationA(equipoB)
-            remoteConfiguration.configureRemoto()
+            configurationA(equipoB)
+            configureRemoto()
             
         if sys.argv[2] == "B":
             if len(sys.argv) != 3:
                 logger.error("Error: la modalidad B no requiere que se indique número de máquina") 
                 return
-            remoteConfiguration.configurationB()     
+            configurationB()     
     
     else:
         logger.error("Error: comando no válido") # Devolver porque no hay suficientes parámetros
