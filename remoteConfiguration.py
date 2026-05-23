@@ -31,14 +31,15 @@ def configurationA(numOrdenadorRemoto):
     # Copiar remotamente la db
     subprocess.run(["lxc", "stop", "db"])
     subprocess.run(["lxc", "copy", "db", "remoto:db"])
+    subprocess.run(["lxc", "start", "remoto:db"])
 
     # Creamos el proxy
     orden = "listen=tcp:" + obtenerIP(numOrdenadorRemoto) + ":27017"
     subprocess.run(["lxc", "config", "device", "add", "remoto:db", "miproxy", "proxy", orden, "connect=tcp:134.3.0.20:27017"])
 
-    subprocess.run(["lxc", "exec", "db", "--", "systemctl", "restart", "mongodb"])
+    subprocess.run(["lxc", "exec", "remoto:db", "--", "systemctl", "restart", "mongodb"])
     time.sleep(10) 
-    subprocess.run(["lxc", "delete", "db"])
+    subprocess.run(["lxc", "delete", "db", "--force"])
 
 # ORDENADOR B
 
