@@ -81,3 +81,4 @@ def obtenerIP(numOrdenador):
     # HACE FALTA CITAR ESTE CÓDIGO: no nos dan en el labo la opcion +short, conseguimos la IP TODO
     respuesta = subprocess.run(["dig", "+short", "+noauthority", "+noadditional", nombreRed], stdout=subprocess.PIPE)
     ip = respuesta.stdout.decode("utf-8").strip()
+    return ip
