@@ -6,7 +6,7 @@ from functions import readFile
 
 def lista():
     try:
-        num_servidores = readFile()
+        num_servidores = readFile("servers.txt")
     except:
         logger.error("Error: no existe la red. Ejecuta 'create' primero.")
         return

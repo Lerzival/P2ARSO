@@ -3,11 +3,13 @@ import logging
 import time
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-from functions import writeFile import preparar_imagen_base
+from functions import writeFile
+from functions import importImage
+from functions import exists
 
 def create(num_servidores):
 
-    preparar_imagen_base()
+    importImage()
     logger.info("Creando " + str(num_servidores) + " servidores")
 
     # Crear redes
@@ -38,36 +40,48 @@ def create(num_servidores):
         nombre = "s" + str(i)
         logger.info("Creando " + nombre)
 
+        if exists(nombre):
+            logger.info(nombre + " ya está creado. Pasando al siguiente")
+            continue
+
         subprocess.run(["lxc", "init", "base-arso", nombre])
         subprocess.run(["lxc", "network", "attach", "lxdbr0", nombre, "eth0"])
         subprocess.run(["lxc", "config", "device", "set", nombre, "eth0", "ipv4.address", "134.3.0.1" + str(i)])
 
     logger.info("Creando lb:")
-    subprocess.run(["lxc", "init", "base-arso", "lb"])
-    logger.info("lb creado correctamente. Asignando redes:")
-    subprocess.run(["lxc", "network", "attach", "lxdbr0", "lb", "eth0"])
-    subprocess.run(["lxc", "network", "attach", "lxdbr1", "lb", "eth1"])
-    logger.info("Redes asignadas correctamente. Configurando IPs:")
-    subprocess.run(["lxc", "config", "device", "set", "lb", "eth0", "ipv4.address", "134.3.0.10"])
-    subprocess.run(["lxc", "config", "device", "set", "lb", "eth1", "ipv4.address", "134.3.1.10"])
-    logger.info("IPs configuradas correctamente")
+
+    if not exists("lb"):
+        subprocess.run(["lxc", "init", "base-arso", "lb"])
+        logger.info("lb creado correctamente. Asignando redes:")
+        subprocess.run(["lxc", "network", "attach", "lxdbr0", "lb", "eth0"])
+        subprocess.run(["lxc", "network", "attach", "lxdbr1", "lb", "eth1"])
+        logger.info("Redes asignadas correctamente. Configurando IPs:")
+        subprocess.run(["lxc", "config", "device", "set", "lb", "eth0", "ipv4.address", "134.3.0.10"])
+        subprocess.run(["lxc", "config", "device", "set", "lb", "eth1", "ipv4.address", "134.3.1.10"])
+        logger.info("IPs configuradas correctamente")
+    else:
+        logger.info("lb ya está creado. Pasando al siguiente")
 
     # Crear c1
-    logger.info("Creando c1:")
-    subprocess.run(["lxc", "init", "base-arso", "c1"])
-    subprocess.run(["lxc", "network", "attach", "lxdbr1", "c1", "eth0"])
-    logger.info("Cliente c1 creado correctamente")
+    if not exists("c1"):
+        logger.info("Creando c1:")
+        subprocess.run(["lxc", "init", "base-arso", "c1"])
+        subprocess.run(["lxc", "network", "attach", "lxdbr1", "c1", "eth0"])
+        logger.info("Cliente c1 creado correctamente")
+    else:
+        logger.info("c1 ya está creado. Pasando al siguiente")
+
 
     # Crear db
-    logger.info("Creando db:")
-    subprocess.run(["lxc", "init", "base-arso", "db"])
-    subprocess.run(["lxc", "network", "attach", "lxdbr0", "db", "eth0"])
-    subprocess.run([
-        "lxc", "config", "device", "set",
-        "db", "eth0", "ipv4.address", "134.3.0.20"
-    ])
+    if not exists ("db"):
+        logger.info("Creando db:")
+        subprocess.run(["lxc", "init", "base-arso", "db"])
+        subprocess.run(["lxc", "network", "attach", "lxdbr0", "db", "eth0"])
+        subprocess.run(["lxc", "config", "device", "set","db", "eth0", "ipv4.address", "134.3.0.20"])
+    else:
+        logger.info("db ya está creado. Pasando al siguiente")
 
 
     # Fichero que guarda la info
-    writeFile(num_servidores)
+    writeFile("servers.txt", num_servidores)
     logger.info("Contenedores creados (ejecutar start para arrancarlos)")

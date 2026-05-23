@@ -12,7 +12,7 @@ def connectivityCheck():
     logger.info("Comprobando conectividad con lb:")
     subprocess.run(["lxc", "exec", "c1", "--", "ping", "-c", "2", "134.3.1.10"]) # Ping a lb desde c1
     
-    num_servidores = int(readFile())
+    num_servidores = int(readFile("servers.txt"))
     for i in range(1, num_servidores + 1): 
         logger.info("Comprobando conectividad con s" + str(i))
         subprocess.run(["lxc", "exec", "c1", "--", "ping", "-c", "2",  "134.3.0.1" + str(i)])

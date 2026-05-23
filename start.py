@@ -5,22 +5,25 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 from functions import readFile
 from functions import isRunning
+from functions import exists
 
 def start():
     try:
-        num_servidores = readFile()
+        num_servidores = readFile("servers.txt")
     except:
         logger.error("Error: no existe la red. Ejecuta 'create' primero.")
         return
 
     logger.info("Arrancando contenedores")
 
-    nombres = [f"s{i}" for i in range(1, num_servidores + 1)] 
-    nombres += ["lb","c1","db"]
+    nombres = ["lb","c1","db"]
+    for i in range (1, num_servidores + 5):
+        if exists (f"s{i}"):
+            nombres += [f"s{i}"]
 
     for nombre in nombres:
-        respuesta = subprocess.run(["lxc", "info", nombre], stdout=subprocess.PIPE, stderr=subprocess.PIPE) # Código deducido a partir del código proporcionado por el profesior y las siguientes páginas: https://dev.to/waylonwalker/read-stderr-from-python-subprocesspopen-4kc, https://dev.to/hosni_zaaraoui/stdout-vs-stderr-vs-stdin-2fkc,   
-        if respuesta.stderr:
+        
+        if not exists(nombre):
             logger.info(nombre + " no existe")
             continue
         

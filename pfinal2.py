@@ -22,7 +22,7 @@ from configure import configure
 
 def main():
     if len(sys.argv) < 2:
-        logger.error("Error: falta comando (create, start, list, delete, createOne, startOne, deleteOne, stopOne)") #Compruebo que están todos los datos pedidos
+        logger.error("Error: falta comando (create, start, lista, delete, createOne, startOne, deleteOne, stopOne, connectivityCheck, configure)") #Compruebo que están todos los datos pedidos
         return
 
     orden = sys.argv[1]

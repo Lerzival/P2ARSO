@@ -4,10 +4,36 @@ import time
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 from functions import readFile
+from functions import exists
+from functions import isRunning
+from functions import writeFile
 
 def configure(): 
 
-    logger.info("Configurando MongoDB...")
+    try:
+        num_servidores = readFile("servers.txt")
+    except:
+        logger.error("Error: no existe la red. Ejecuta 'create' primero.")
+        return
+
+    if readFile("configuration.txt") == 1:
+        logger.info("La configuración ya ha sido lanzada previamente. Ejecutar de nuevo configure no es posible.")
+        return
+
+    nombres = ["lb","c1","db"]
+    for i in range (1, num_servidores + 5):
+        if exists (f"s{i}"):
+            nombres += [f"s{i}"]
+
+
+    for nombre in nombres:
+
+        if not isRunning(nombre):
+            logger.info(nombre + " no está arrancado. No se puede realizar la configuración")
+            return
+
+
+    logger.info("Configurando MongoDB")
 
     # MONGODB YA INSTALADO EN LA IMAGEN 
 
@@ -19,15 +45,12 @@ def configure():
 
     # reiniciamos
     subprocess.run(["lxc", "exec", "db", "--", "systemctl", "restart", "mongodb"])
-
     time.sleep(10) 
-
-
     logger.info("MongoDB configurado")
 
 
     # configuramos haproxy
-    logger.info("Configurando Haproxy...")
+    logger.info("Configurando Haproxy")
     
     subprocess.run(["lxc", "exec", "lb", "--", "apt", "update"])
     subprocess.run(["lxc", "exec", "lb", "--", "apt", "install", "-y", "haproxy"])
@@ -38,14 +61,17 @@ def configure():
     logger.info("Haproxy configurado")
 
 
-    num_servidores = readFile()
+    num_servidores = readFile("servers.txt")
 
-    logger.info("Configurando servidores web...")
+    logger.info("Configurando servidores web")
     
     logger.info(f"Configurando {num_servidores} servidores web")
 
-    for i in range(1, int(num_servidores) + 1):
-        nombre = f"s{i}"
+    for nombre in nombres:
+        
+        if nombre in["lb", "c1", "db"]:
+            continue
+
         logger.info(f"Configurando {nombre}")
 
         #Copiar el fichero de instalación en el contenedor
@@ -68,14 +94,15 @@ def configure():
         subprocess.run(["lxc", "exec", nombre, "--", "/root/install.sh"])
 
         #Reiniciar el contenedor para completar la instalación
-        logger.info(f"Reiniciando {nombre} para aplicar los cambios de instalación...")
+        logger.info(f"Reiniciando {nombre} para aplicar los cambios de instalación")
         subprocess.run(["lxc", "restart", nombre])
-
-        #Pausa de seguridad
         time.sleep(10) 
 
         #Lanzar la aplicación web usando forever
-        logger.info(f"Arrancando aplicación en {nombre}...")
+        logger.info(f"Arrancando aplicación en {nombre}")
         subprocess.run(["lxc", "exec", nombre, "--", "forever", "start", "/root/app/rest_server.js"])
+        time.sleep(10)
+    
+    writeFile("configuration.txt", "1") 
         
     logger.info("Configuración de todos los servidores completada con éxito.")
