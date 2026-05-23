@@ -95,7 +95,7 @@ def main():
              
 
     elif orden == "remoteConfiguration":
-        if len(sys.argv) >=4:
+        if len(sys.argv) <3:
             logger.error("Error: la orden remoteConfiguration requiere que se indique la modalidad (A o B) y, en el caso de ser A, el numero de equipo de B") 
             return
         
@@ -114,7 +114,7 @@ def main():
                 return
             
             configurationA(equipoB)
-            configureRemoto()
+            configureRemoto(equipoB)
             
         if sys.argv[2] == "B":
             if len(sys.argv) != 3:

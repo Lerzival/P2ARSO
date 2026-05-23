@@ -22,20 +22,23 @@ def configurationA(numOrdenadorRemoto):
 
     # Nos acreditamos
     orden2 = obtenerIP(numOrdenadorRemoto) + ":8443"
-    subprocess.run(["lxc", "remote", "add", "remote", orden2, "--password", "mypass", "--accept-certificate"])
+    subprocess.run(["lxc", "remote", "add", "remoto", orden2, "--password", "mypass", "--accept-certificate"])
 
     # Configuramos el bridge remoto
     subprocess.run(["lxc", "network", "set", "remoto:lxdbr0", "ipv4.address", "134.3.0.1/24"])
     subprocess.run(["lxc", "network", "set", "remoto:lxdbr0", "ipv4.nat", "true"])
 
     # Copiar remotamente la db
+    subprocess.run(["lxc", "stop", "db"])
     subprocess.run(["lxc", "copy", "db", "remoto:db"])
-
 
     # Creamos el proxy
     orden = "listen=tcp:" + obtenerIP(numOrdenadorRemoto) + ":27017"
     subprocess.run(["lxc", "config", "device", "add", "remoto:db", "miproxy", "proxy", orden, "connect=tcp:134.3.0.20:27017"])
 
+    subprocess.run(["lxc", "exec", "db", "--", "systemctl", "restart", "mongodb"])
+    time.sleep(10) 
+    subprocess.run(["lxc", "delete", "db"])
 
 # ORDENADOR B
 
@@ -71,7 +74,7 @@ def configureRemoto(numOrdenadorRemoto):
         logger.error("Error: no existe la red. Ejecuta 'create' primero.")
         return
 
-    
+    nombres = []
     for i in range (1, num_servidores + 5):
         if exists (f"s{i}"):
             nombres += [f"s{i}"]
@@ -99,7 +102,7 @@ def configureRemoto(numOrdenadorRemoto):
 
         #Sustituir la IP antigua
         subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/10.0.0.20/{ipB}/g", "/root/app/md-seed-config.js"])
-        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/10.0.0.20/{ipB}/g", "/root/app/rest_server.js"])
+        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/134.3.0.20/{ipB}/g", "/root/app/rest_server.js"])
 
         #Ejecutar la instalación a través del fichero install.sh
         subprocess.run(["lxc", "exec", nombre, "--", "/root/install.sh"])
