@@ -22,6 +22,7 @@ from configureOne import configureOne
 from remoteConfiguration import configurationA
 from remoteConfiguration import configurationB
 from remoteConfiguration import configureRemoto
+from enlarge import enlarge
 
 
 def main():
@@ -69,9 +70,7 @@ def main():
         elif orden == "configure":
             configure()
         elif orden == "enlarge":
-            server = createOne()
-            startOne(server)
-            configureOne(server)  
+            enlarge() 
 
 
     elif orden in ["startOne", "deleteOne", "stopOne", "configureOne"]:

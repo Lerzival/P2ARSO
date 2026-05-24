@@ -104,5 +104,6 @@ def configure():
         time.sleep(10)
     
     writeFile("configuration.txt", "1") 
-        
+    writeFile("dbIP.txt", "134.3.0.20") # IP dela db local    
+
     logger.info("Configuración de todos los servidores completada con éxito.")

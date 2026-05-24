@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 def readFile (ruta):
     try:
         with open(ruta, "r") as fich:
-            texto = int(fich.read().strip())
+            texto = int(fich.read().strip()) 
         return texto
     except Exception as e:
         logger.error("Algo ha salido mal con la lectura del archivo " + ruta)

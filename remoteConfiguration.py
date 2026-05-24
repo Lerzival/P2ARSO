@@ -131,5 +131,6 @@ def configureRemoto(ipB):
         time.sleep(10)
     
     writeFile("configuration.txt", "1") 
+    writeFile("dpIP.txt", sys.argv[3]) # Cojo la IP del comando para guardarlo 
         
     logger.info("Configuración remota de todos los servidores completada con éxito.")

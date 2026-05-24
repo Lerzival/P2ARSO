@@ -6,6 +6,10 @@ logger = logging.getLogger(__name__)
 from functions import exists
 from functions import isRunning
 
+def getDbIP():
+    with open("dbIP.txt", "r") as f:
+        ip = f.read().strip() # No usamos la función readFile porque devuelve un int que necesitamos para start 
+    return ip # Nos devuelve la IP guardada en dbIP.txt 
 
 def configureOne(nombre): 
     #NO TIENE EN CUENTA SI SE INTENTA HACER UNA CONFIGURACIÓN DE UN SERVIDOR YA CONFIGURADO
@@ -28,9 +32,11 @@ def configureOne(nombre):
     #Descomprimir el fichero TAR
     subprocess.run(["lxc", "exec", nombre, "--", "tar", "-oxvf", "/root/app.tar.gz"])
 
+    dbIP = getDbIP() # Guardamos la IP como variable   
+
     #Sustituir la IP antigua
-    subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/10.0.0.20/134.3.0.20/g", "/root/app/md-seed-config.js"])
-    subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/10.0.0.20/134.3.0.20/g", "/root/app/rest_server.js"])
+    subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/10.0.0.20/{dbIP}/g", "/root/app/md-seed-config.js"])
+    subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/10.0.0.20/{dbIP}/g", "/root/app/rest_server.js"])
 
     #Ejecutar la instalación a través del fichero install.sh
     subprocess.run(["lxc", "exec", nombre, "--", "/root/install.sh"])
