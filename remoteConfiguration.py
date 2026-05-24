@@ -59,10 +59,10 @@ def configurationB():
     # Permitimos el acceso remoto 
     orden = ipB + ":8443"
     subprocess.run(["lxc", "config", "set", "core.https_address", orden])
-
     # Acreditación
     subprocess.run(["lxc", "config", "set", "core.trust_password", "mypass"])
 
+    logger.info(f"IP del ordenador B: {ipB}")
     print(ipB)
 
 
