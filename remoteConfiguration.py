@@ -14,16 +14,17 @@ from functions import getName
 # ORDENADOR A
 
 def configurationA(ipB):
+    
+    # Borramos el remoto si ya existe 
+    respuesta = subprocess.run(["lxc", "remote", "show", "remoto"], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #codigo deducido a partir del codigo proporcionado por el profesior y las siguientes paginas: https://dev.to/waylonwalker/read-stderr-from-python-subprocesspopen-4kc, https://dev.to/hosni_zaaraoui/stdout-vs-stderr-vs-stdin-2fkc, https://docs.python.org/es/3/library/sys.html    
+    if respuesta.returncode == 0:
+        subprocess.run(["lxc", "remote", "remove", "remoto", "--force"])
+
     ipA = obtenerIP(getName())
 
     # Permitimos el acceso remoto 
     orden = ipA + ":8443"
     subprocess.run(["lxc", "config", "set", "core.https_address", orden])
-
-    # Borramos el remoto si ya existe 
-    respuesta = subprocess.run(["lxc", "remote", "show", "remoto"], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #codigo deducido a partir del codigo proporcionado por el profesior y las siguientes paginas: https://dev.to/waylonwalker/read-stderr-from-python-subprocesspopen-4kc, https://dev.to/hosni_zaaraoui/stdout-vs-stderr-vs-stdin-2fkc, https://docs.python.org/es/3/library/sys.html    
-    if respuesta.returncode == 0:
-        subprocess.run(["lxc", "remote", "remove", "remoto", "--force"])
 
     # Nos acreditamos
     orden2 = ipB + ":8443"
@@ -41,11 +42,13 @@ def configurationA(ipB):
         "sed", "-i", "s/bind_ip = 127.0.0.1/bind_ip = 127.0.0.1,134.3.0.20/", "/etc/mongodb.conf"
     ])
 
-    subprocess.run(["lxc", "exec", "remoto:db", "--", "systemctl", "restart", "mongodb"])
+    subprocess.run(["lxc", "exec", "db", "--", "systemctl", "restart", "mongodb"])
     
     subprocess.run(["lxc", "stop", "db"])
     subprocess.run(["lxc", "copy", "db", "remoto:db"])
     subprocess.run(["lxc", "start", "remoto:db"])
+    
+    time.sleep(5)
 
     # Creamos el proxy
     orden = "listen=tcp:" + ipB + ":27017"

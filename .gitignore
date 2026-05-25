@@ -3,3 +3,4 @@ app.tar.gz
 servers.txt
 __pycache__/
 configuration.txt
+dbIP.txt
