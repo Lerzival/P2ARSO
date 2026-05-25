@@ -20,6 +20,11 @@ def configurationA(ipB):
     orden = ipA + ":8443"
     subprocess.run(["lxc", "config", "set", "core.https_address", orden])
 
+    # Borramos el remoto si ya existe 
+    respuesta = subprocess.run(["lxc", "remote", "show", "remoto"], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #codigo deducido a partir del codigo proporcionado por el profesior y las siguientes paginas: https://dev.to/waylonwalker/read-stderr-from-python-subprocesspopen-4kc, https://dev.to/hosni_zaaraoui/stdout-vs-stderr-vs-stdin-2fkc, https://docs.python.org/es/3/library/sys.html    
+    if respuesta.returncode == 0:
+        subprocess.run(["lxc", "remote", "remove", "remoto", "--force"])
+
     # Nos acreditamos
     orden2 = ipB + ":8443"
     subprocess.run(["lxc", "remote", "add", "remoto", orden2, "--password", "mypass", "--accept-certificate"])
@@ -54,6 +59,12 @@ def configurationA(ipB):
 # ORDENADOR B
 
 def configurationB():
+
+    # Borramos la base de datos si ya existe 
+    respuesta = subprocess.run(["lxc", "info", "db"], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #codigo deducido a partir del codigo proporcionado por el profesior y las siguientes paginas: https://dev.to/waylonwalker/read-stderr-from-python-subprocesspopen-4kc, https://dev.to/hosni_zaaraoui/stdout-vs-stderr-vs-stdin-2fkc, https://docs.python.org/es/3/library/sys.html    
+    if respuesta.returncode == 0:
+        subprocess.run(["lxc", "delete", "db", "--force"])
+
     ipB = obtenerIP(getName())
 
     # Permitimos el acceso remoto 
