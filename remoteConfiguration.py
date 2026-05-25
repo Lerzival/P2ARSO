@@ -28,43 +28,30 @@ def configurationA(ipB):
     subprocess.run(["lxc", "network", "set", "remoto:lxdbr0", "ipv4.address", "134.3.0.1/24"])
     subprocess.run(["lxc", "network", "set", "remoto:lxdbr0", "ipv4.nat", "true"])
 
-    # Copiar remotamente la db
-
-    # Editamos fichero de configuración de mongo para asignar la IP
+    # Editamos fichero de configuración de mongo para asignar la IP (0.0.0.0 para que escuche al proxy)
     subprocess.run([
         "lxc", "exec", "db", "--",
-        "sed", "-i", "s/bind_ip = 127.0.0.1/bind_ip = 127.0.0.1,134.3.0.20/", "/etc/mongodb.conf"
+        "sed", "-i", "s/bind_ip = 127.0.0.1/bind_ip = 0.0.0.0/", "/etc/mongodb.conf"
     ])
 
-    subprocess.run(["lxc", "exec", "remoto:db", "--", "systemctl", "restart", "mongodb"])
-    
+    # Paramos, copiamos y arrancamos en el destino
     subprocess.run(["lxc", "stop", "db"])
     subprocess.run(["lxc", "copy", "db", "remoto:db"])
     subprocess.run(["lxc", "start", "remoto:db"])
+
+    # AHORA reiniciamos Mongo (porque el contenedor remoto ya existe y está arrancado)
+    time.sleep(3)
+    subprocess.run(["lxc", "exec", "remoto:db", "--", "systemctl", "restart", "mongodb"])
 
     # Creamos el proxy
     orden = "listen=tcp:" + ipB + ":27017"
     subprocess.run(["lxc", "config", "device", "add", "remoto:db", "miproxy", "proxy", orden, "connect=tcp:134.3.0.20:27017"])
 
-
-
     time.sleep(10) 
     subprocess.run(["lxc", "delete", "db", "--force"])
 
+
 # ORDENADOR B
-
-def configurationB():
-    ipB = obtenerIP(getName())
-
-    # Permitimos el acceso remoto 
-    orden = ipB + ":8443"
-    subprocess.run(["lxc", "config", "set", "core.https_address", orden])
-
-    # Acreditación
-    subprocess.run(["lxc", "config", "set", "core.trust_password", "mypass"])
-
-    print(ipB)
-
 
 def configureRemoto(ipB): 
 
@@ -91,9 +78,7 @@ def configureRemoto(ipB):
             nombres += [f"s{i}"]
 
     logger.info("Configurando servidores web remotamente")
-    
     logger.info(f"Configurando {num_servidores} servidores web remotamente")
-
 
     for nombre in nombres:
         
@@ -111,23 +96,17 @@ def configureRemoto(ipB):
         #Descomprimir el fichero TAR
         subprocess.run(["lxc", "exec", nombre, "--", "tar", "-oxvf", "/root/app.tar.xz"])
 
-        #Sustituir la IP antigua
-
-        print(f"ipB = {repr(ipB)}")
-        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/127.0.0.1/{ipB}/g", "/root/app/md-seed-config.js"])
-        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/127.0.0.1/{ipB}:27017/g", "/root/app/rest_server.js"])
-
-        #Ejecutar la instalación a través del fichero install.sh
-        subprocess.run(["lxc", "exec", nombre, "--", "/root/install.sh"])
+        # Ejecutar la instalación a través del fichero install.sh (Inyectando la IP)
+        subprocess.run(["lxc", "exec", nombre, "--", "bash", "-c", f"cd /root && export MONGO_URL='mongodb://{ipB}:27017/bio_bbdd' && ./install.sh"])
 
         #Reiniciar el contenedor para completar la instalación
         logger.info(f"Reiniciando {nombre} para aplicar los cambios de instalación")
         subprocess.run(["lxc", "restart", nombre])
         time.sleep(10) 
 
-        #Lanzar la aplicación web usando forever
+        #Lanzar la aplicación web usando forever (Inyectando la IP)
         logger.info(f"Arrancando aplicación en {nombre}")
-        subprocess.run(["lxc", "exec", nombre, "--", "forever", "start", "/root/app/rest_server.js"])
+        subprocess.run(["lxc", "exec", nombre, "--", "bash", "-c", f"cd /root && export MONGO_URL='mongodb://{ipB}:27017/bio_bbdd' && forever start app/rest_server.js"])
         time.sleep(10)
     
     writeFile("configuration.txt", "1") 
