@@ -3,7 +3,6 @@ import logging
 import time
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-from functions import exists
 from functions import isRunning
 from getDbIP import getDbIP
 
@@ -23,16 +22,16 @@ def configureOne(nombre):
     subprocess.run(["lxc", "exec", nombre, "--", "chmod", "+x", "install.sh"])
 
     # Copiar ficheros de la aplicación web al contenedor
-    subprocess.run(["lxc", "file", "push", "-r", "app.tar.gz", f"{nombre}/root/"])
+    subprocess.run(["lxc", "file", "push", "-r", "app.tar.xz", f"{nombre}/root/"])
 
     #Descomprimir el fichero TAR
-    subprocess.run(["lxc", "exec", nombre, "--", "tar", "-oxvf", "/root/app.tar.gz"])
+    subprocess.run(["lxc", "exec", nombre, "--", "tar", "-oxvf", "/root/app.tar.xz"])
 
     dbIP = getDbIP() # Guardamos la IP como variable   
 
     #Sustituir la IP antigua
-    subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/10.0.0.20/{dbIP}/g", "/root/app/md-seed-config.js"])
-    subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/10.0.0.20/{dbIP}/g", "/root/app/rest_server.js"])
+    subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/127.0.0.1/{dbIP}/g", "/root/app/md-seed-config.js"])
+    subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/127.0.0.1/{dbIP}/g", "/root/app/rest_server.js"])
 
     #Ejecutar la instalación a través del fichero install.sh
     subprocess.run(["lxc", "exec", nombre, "--", "/root/install.sh"])

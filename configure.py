@@ -81,14 +81,14 @@ def configure():
         subprocess.run(["lxc", "exec", nombre, "--", "chmod", "+x", "install.sh"])
 
         # Copiar ficheros de la aplicación web al contenedor
-        subprocess.run(["lxc", "file", "push", "-r", "app.tar.gz", f"{nombre}/root/"])
+        subprocess.run(["lxc", "file", "push", "-r", "app.tar.xz", f"{nombre}/root/"])
 
         #Descomprimir el fichero TAR
-        subprocess.run(["lxc", "exec", nombre, "--", "tar", "-oxvf", "/root/app.tar.gz"])
+        subprocess.run(["lxc", "exec", nombre, "--", "tar", "-oxvf", "/root/app.tar.xz"])
 
         #Sustituir la IP antigua
-        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/10.0.0.20/134.3.0.20/g", "/root/app/md-seed-config.js"])
-        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/10.0.0.20/134.3.0.20/g", "/root/app/rest_server.js"])
+        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/127.0.0.1/134.3.0.20/g", "/root/app/md-seed-config.js"])
+        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/127.0.0.1/134.3.0.20/g", "/root/app/rest_server.js"])
 
         #Ejecutar la instalación a través del fichero install.sh
         subprocess.run(["lxc", "exec", nombre, "--", "/root/install.sh"])

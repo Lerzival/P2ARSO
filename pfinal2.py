@@ -4,6 +4,7 @@
 
 import sys
 import logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ from remoteConfiguration import configurationA
 from remoteConfiguration import configurationB
 from remoteConfiguration import configureRemoto
 from enlarge import enlarge
+from functions import writeFile
 
 
 def main():
@@ -111,7 +113,7 @@ def main():
             except ValueError:
                 logger.error("Error: el número de equipo de B debe ser un número entero") 
                 return
-            
+            writeFile("dbIP.txt", ipB) #Guardamos la IP de B para usarla en configureOne
             configurationA(ipB)
             configureRemoto(ipB)
             

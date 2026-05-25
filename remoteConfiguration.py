@@ -106,16 +106,16 @@ def configureRemoto(ipB):
         subprocess.run(["lxc", "exec", nombre, "--", "chmod", "+x", "/root/install.sh"])
 
         # Copiar ficheros de la aplicación web al contenedor
-        subprocess.run(["lxc", "file", "push", "-r", "app.tar.gz", f"{nombre}/root/"])
+        subprocess.run(["lxc", "file", "push", "-r", "app.tar.xz", f"{nombre}/root/"])
 
         #Descomprimir el fichero TAR
-        subprocess.run(["lxc", "exec", nombre, "--", "tar", "-oxvf", "/root/app.tar.gz"])
+        subprocess.run(["lxc", "exec", nombre, "--", "tar", "-oxvf", "/root/app.tar.xz"])
 
         #Sustituir la IP antigua
 
         print(f"ipB = {repr(ipB)}")
-        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/10.0.0.20/{ipB}/g", "/root/app/md-seed-config.js"])
-        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/10.0.0.20/{ipB}:27017/g", "/root/app/rest_server.js"])
+        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/127.0.0.1/{ipB}/g", "/root/app/md-seed-config.js"])
+        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", f"s/127.0.0.1/{ipB}:27017/g", "/root/app/rest_server.js"])
 
         #Ejecutar la instalación a través del fichero install.sh
         subprocess.run(["lxc", "exec", nombre, "--", "/root/install.sh"])
@@ -131,6 +131,5 @@ def configureRemoto(ipB):
         time.sleep(10)
     
     writeFile("configuration.txt", "1") 
-    writeFile("dpIP.txt", sys.argv[3]) # Cojo la IP del comando para guardarlo 
         
     logger.info("Configuración remota de todos los servidores completada con éxito.")
