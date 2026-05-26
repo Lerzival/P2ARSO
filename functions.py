@@ -1,6 +1,5 @@
 import subprocess
 import logging
-import os
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -25,17 +24,11 @@ def exists (nomServer):
     
     respuesta = subprocess.run(["lxc", "info", nomServer], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #codigo deducido a partir del codigo proporcionado por el profesior y las siguientes paginas: https://dev.to/waylonwalker/read-stderr-from-python-subprocesspopen-4kc, https://dev.to/hosni_zaaraoui/stdout-vs-stderr-vs-stdin-2fkc, https://docs.python.org/es/3/library/sys.html    
    
-    if respuesta.returncode == 0:
+    if respuesta.returncode == 0: #si el comando se ejecuta correctamente, el servidor existe     
         return True
     
     return False
-    # Yo eliminaría las líneas de la 27 a la 30 y pondría la siguiente
-    # return respuesta.returncode == 0
-    # habría que buscar una página que lo justifique, porque simplemente conozco la función
-    # el propio subprocess.run nos devuelve un número, si es 0, es true, y sino es 0 es false, por lo que esa comprobación bastaría
-
-# Gaizka: He metido una función de comprobacion de imagen como hacemos la del contenedor
-# Si al final lo hacemos con returncode (como propones celia arriba) habria que cambiarlo
+    
 def imageExists (image): 
     
     respuesta = subprocess.run(["lxc", "image", "info", image], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #codigo deducido a partir del codigo proporcionado por el profesior y las siguientes paginas: https://dev.to/waylonwalker/read-stderr-from-python-subprocesspopen-4kc, https://dev.to/hosni_zaaraoui/stdout-vs-stderr-vs-stdin-2fkc, https://docs.python.org/es/3/library/sys.html    
@@ -72,14 +65,12 @@ def importImage():
             logger.error(f"Por favor, asegúrate de que el archivo '{ruta}' se encuentra en la misma carpeta que este script.")
     
 def getName():
-    # HACE FALTA CITAR CODIGO TODO return os.uname().nodename
-    respuesta = subprocess.run(["hostname"], stdout=subprocess.PIPE)
+    respuesta = subprocess.run(["hostname"], stdout=subprocess.PIPE) #hostname devuelve el numero del ordenador del lab 
     return respuesta.stdout.decode("utf-8").strip()
 
 
 def obtenerIP(numOrdenador):
     nombreRed = numOrdenador + ".lab.dit.upm.es"
-    # HACE FALTA CITAR ESTE CÓDIGO: no nos dan en el labo la opcion +short, conseguimos la IP TODO
-    respuesta = subprocess.run(["dig", "+short", "+noauthority", "+noadditional", nombreRed], stdout=subprocess.PIPE)
+    respuesta = subprocess.run(["dig", "+short", "+noauthority", "+noadditional", nombreRed], stdout=subprocess.PIPE) #short devuelve una respuesta mas corta con solo la ip, demas codigo proporcionado en laboratorios
     ip = respuesta.stdout.decode("utf-8").strip()
     return ip

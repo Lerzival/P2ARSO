@@ -40,7 +40,7 @@ def configure():
     # Editamos fichero de configuración de mongo para asignar la IP
     subprocess.run([
         "lxc", "exec", "db", "--",
-        "sed", "-i", "s/bind_ip = 127.0.0.1/bind_ip = 127.0.0.1,134.3.0.20/", "/etc/mongodb.conf"
+        "sed", "-i", "s/bind_ip = 127.0.0.1/bind_ip = 127.0.0.1,134.3.0.20/", "/etc/mongodb.conf"#-i edita el fichero sobre la marcha sin crear otro  
     ])
 
     # reiniciamos
@@ -53,11 +53,11 @@ def configure():
     logger.info("Configurando Haproxy")
     
     subprocess.run(["lxc", "exec", "lb", "--", "apt", "update"])
-    subprocess.run(["lxc", "exec", "lb", "--", "apt", "install", "-y", "haproxy"])
+    subprocess.run(["lxc", "exec", "lb", "--", "apt", "install", "-y", "haproxy"])# -y para que no nos pida confirmacion al instalar haproxy
 
     # Empujamos el fichero y reiniciamos
     subprocess.run(["lxc", "file", "push", "haproxy.cfg", "lb/etc/haproxy/haproxy.cfg"])
-    subprocess.run(["lxc", "exec", "lb", "--", "systemctl", "restart", "haproxy"])
+    subprocess.run(["lxc", "exec", "lb", "--", "systemctl", "restart", "haproxy"]) #systemctl se encarga de reiniciar el servicio de haproxy para que los cambios tengan efecto 
     logger.info("Haproxy configurado")
 
 
@@ -88,7 +88,7 @@ def configure():
 
         #Sustituir la IP antigua
         subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/127.0.0.1/134.3.0.20/g", "/root/app/md-seed-config.js"])
-        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/127.0.0.1/134.3.0.20/g", "/root/app/rest_server.js"])
+        subprocess.run(["lxc", "exec", nombre, "--", "sed", "-i", "s/127.0.0.1/134.3.0.20/g", "/root/app/rest_server.js"])  
 
         #Ejecutar la instalación a través del fichero install.sh
         subprocess.run(["lxc", "exec", nombre, "--", "/root/install.sh"])
@@ -100,7 +100,7 @@ def configure():
 
         #Lanzar la aplicación web usando forever
         logger.info(f"Arrancando aplicación en {nombre}")
-        subprocess.run(["lxc", "exec", nombre, "--", "forever", "start", "/root/app/rest_server.js"])
+        subprocess.run(["lxc", "exec", nombre, "--", "forever", "start", "/root/app/rest_server.js"]) #forever se encarga de que la aplicacion corra
         time.sleep(10)
     
     writeFile("configuration.txt", "1") 

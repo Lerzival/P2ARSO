@@ -7,7 +7,6 @@ from functions import isRunning
 from getDbIP import getDbIP
 
 def configureOne(nombre): 
-    #NO TIENE EN CUENTA SI SE INTENTA HACER UNA CONFIGURACIÓN DE UN SERVIDOR YA CONFIGURADO
 
     if not isRunning(nombre):
         logger.info(nombre + " no está arrancado. No se puede realizar la configuración")
