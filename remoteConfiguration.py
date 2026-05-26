@@ -16,9 +16,9 @@ from functions import getName
 def configurationA(ipB):
     
     # Borramos el remoto si ya existe 
-    respuesta = subprocess.run(["lxc", "remote", "show", "remoto"], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #codigo deducido a partir del codigo proporcionado por el profesior y las siguientes paginas: https://dev.to/waylonwalker/read-stderr-from-python-subprocesspopen-4kc, https://dev.to/hosni_zaaraoui/stdout-vs-stderr-vs-stdin-2fkc, https://docs.python.org/es/3/library/sys.html    
+    respuesta = subprocess.run(["lxc", "info", "remoto:"], stdout=subprocess.PIPE, stderr=subprocess.PIPE) #codigo deducido a partir del codigo proporcionado por el profesior y las siguientes paginas: https://dev.to/waylonwalker/read-stderr-from-python-subprocesspopen-4kc, https://dev.to/hosni_zaaraoui/stdout-vs-stderr-vs-stdin-2fkc, https://docs.python.org/es/3/library/sys.html    
     if respuesta.returncode == 0:
-        subprocess.run(["lxc", "remote", "remove", "remoto", "--force"])
+        subprocess.run(["lxc", "remote", "remove", "remoto"])
 
     ipA = obtenerIP(getName())
 
