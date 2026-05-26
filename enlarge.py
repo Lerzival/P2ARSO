@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def enlarge():
 
-   if readFile("configuration.txt") == 1:
+   if readFile("configuration.txt") == 0:
       logger.error("Para ejecutar enlarge es necesario configurar los servidores.")
       return
 
